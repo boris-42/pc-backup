@@ -1,0 +1,100 @@
+---
+- hosts: all
+  tasks:
+  - name: "Install gpg key"
+    become: yes
+    apt_key:
+      url: "https://download.sublimetext.com/sublimehq-pub.gpg"
+      state: "present"
+
+  - name: Add sublime apt repo
+    become: yes
+    apt_repository:
+      repo: deb https://download.sublimetext.com/ apt/stable/
+      state: present
+
+  - name: Apt get update/upgrade
+    become: yes
+    apt:
+      force_apt_get: yes
+      upgrade: safe
+      update_cache: yes
+
+  - name: Apt Get Install packages
+    become: yes
+    apt:
+      force_apt_get: yes
+      state: present
+      name: "{{ item }}"
+    with_items:
+      - bash-completion
+      - ansible
+      - python-pip
+      - vim
+      - git
+      - sublime-text
+      - virt-*
+      - libguestfs-tools
+      - qemu-kvm
+      - docker-compose
+      - docker.io
+      - libvirt-bin 
+      - stress-ng
+      - indicator-multiload
+      - conky
+      - lm-sensors
+      - hddtemp
+
+  - name: Install Python packages 
+    become: yes
+    pip:
+      name: "{{ item }}"
+    with_items:
+      - virtualenv
+      - tox
+      - requests
+      - psutil>=4.0.0
+
+  - name: Add {{ ansible_user }} to libvirtd group
+    become: true
+    user:
+      name: "{{ ansible_user }}"
+      groups: "{{ item }}"
+      append: yes
+    with_items: 
+      - docker
+      - libvirt
+
+#  - name: Sync layouts
+#    become: yes
+#    dconf:
+#      key: "/org/gnome/desktop/input-sources/sources"
+#      value: "[('xkb', 'us'), ('xkb', 'se'), ('xkb', 'ru')]"
+#      state: present
+
+  - name: Copy conkyrc configuration
+    copy: 
+      src: conkyrc
+      dest: "/home/{{ ansible_user }}/.conkyrc"
+
+  - name: Ensure that autostart directory exists 
+    file:
+      path: "/home/{{ ansible_user}}/.config/autostart"
+      mode: 0755
+      state: directory
+
+  - name: Start conky on session start
+    copy:
+      src: conky.desktop
+      dest: "/home/{{ ansible_user}}/.config/autostart/conky.desktop"
+
+  - name: Check whatever bash completion is in ~/.bashrc
+    shell: 'grep "^source /etc/bash_completion.d/git-prompt" /home/{{ ansible_user }}/.bashrc | wc -l'
+    register: test_git_completion
+
+  - name: Add git completion to to ~/.bashrc
+    lineinfile:
+      dest: "/home/{{ ansible_user }}/.bashrc"
+      line: "source /etc/bash_completion.d/git-prompt"
+    when: test_git_completion.stdout == "0"
+
