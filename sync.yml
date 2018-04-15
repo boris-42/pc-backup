@@ -12,7 +12,7 @@
     apt_repository:
       repo: deb https://download.sublimetext.com/ apt/stable/
       state: present
-
+      
   - name: Apt get update/upgrade
     become: yes
     apt:
@@ -44,6 +44,8 @@
       - conky
       - lm-sensors
       - hddtemp
+      - backintime-qt4
+      - telegram-desktop
 
   - name: Install Python packages 
     become: yes
@@ -98,3 +100,7 @@
       line: "source /etc/bash_completion.d/git-prompt"
     when: test_git_completion.stdout == "0"
 
+  - name: Add gitconfig to ~/.gitconfig
+    copy:
+      src: gitconfig
+      dest: "/home/{{ ansible_user }}/.gitconfig"

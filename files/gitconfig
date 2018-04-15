@@ -1,0 +1,6 @@
+[user]
+    name = Boris Pavlovic
+    email = boris@pavlovic.me
+    username = boris-42
+[core]
+    editor = vim
