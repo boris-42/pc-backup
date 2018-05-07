@@ -46,6 +46,7 @@
       - hddtemp
       - backintime-qt4
       - telegram-desktop
+      - htop
 
   - name: Install Python packages 
     become: yes
@@ -67,17 +68,21 @@
       - docker
       - libvirt
 
-#  - name: Sync layouts
-#    become: yes
-#    dconf:
-#      key: "/org/gnome/desktop/input-sources/sources"
-#      value: "[('xkb', 'us'), ('xkb', 'se'), ('xkb', 'ru')]"
-#      state: present
-
   - name: Copy conkyrc configuration
     copy: 
       src: conkyrc
       dest: "/home/{{ ansible_user }}/.conkyrc"
+
+  - name: Create conky dir 
+    file: 
+      path: "/home/{{ ansible_user}}/.conky"
+      mode: 0755
+      state: directory
+
+  - name: Copy conky lua 
+    copy: 
+      src: conky.lua
+      dest: "/home/{{ ansible_user}}/.conky/lib.lua" 
 
   - name: Ensure that autostart directory exists 
     file:

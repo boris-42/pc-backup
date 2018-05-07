@@ -25,14 +25,16 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ]]
 
+
 conky.config = {
     alignment = 'top_right',
     background = false,
     border_width = 1,
     cpu_avg_samples = 2,
+    diskio_avg_samples = 2,
     own_window_colour = 'black',
     own_window_argb_visual = true,
-    own_window_argb_value = 0,
+    own_window_argb_value = 20,
     default_color = 'DEDEDE',
     default_outline_color = 'DEDEDE',
     default_shade_color = 'DEDEDE',
@@ -41,9 +43,9 @@ conky.config = {
     draw_outline = false,
     draw_shades = false,
     use_xft = true,
-    font = 'DejaVu Sans Mono:size=13',
-    gap_x = 5,
-    gap_y = 60,
+    font = 'DejaVu Sans Mono:size=12',
+    gap_x = 10,
+    gap_y = 300,
     minimum_height = 5,
     minimum_width = 5,
     net_avg_samples = 2,
@@ -53,31 +55,54 @@ conky.config = {
     extra_newline = false,
     own_window = true,
     own_window_class = 'Conky',
-    own_window_type = 'noraml',
+    own_window_type = 'normal',
     own_window_hints = "undecorated,below,sticky,skip_taskbar,skip_pager",
-    stippled_borders = 0,
-    update_interval = 2.0,
+    stippled_borders = 20,
+    update_interval = 1.5,
     uppercase = false,
     use_spacer = 'none',
     double_buffer = true,
     show_graph_scale = false,
-    show_graph_range = false
+    show_graph_range = false,
+    lua_load = '~/.conky/lib.lua'
 }
 
 conky.text = [[
 ${color white}$nodename - $sysname $kernel
-
-${color white}Uptime:$color $uptime
+${color white}uptimes$color $uptime
 
 ${color white}CPU ($freq Mhz):$color $cpu% 
-${cpugraph 25 }
-${color white}RAM:$color $memperc% $mem/$memmax 
-${memgraph 25 }
-${color white}Processes:$color $processes  ${color white}Running:$color $running_processes
+${cpugraph cpu0 35,0 005844 005845 -t}
+${lua_parse soket_1_1}
+${lua_parse soket_1_2}
+${lua_parse soket_2_1}
+${lua_parse soket_2_2}
 
-${color white}Net: ${upspeed wlp6s0}↗  ${downspeed wlp6s0}↘
-${upspeedgraph wlp6s0 25} 
-${downspeedgraph wlp6s0 25}
+${color white}RAM:$color $memperc% $mem/$memmax 
+${memgraph 35,0 005844 005845 -t}
+${color white}SWAP: $swapperc% $color $swap ($swapmax)
+
+
+${color white}NETWORK: ${upspeed wlp6s0}↗  ${downspeed wlp6s0}↘
+${upspeedgraph wlp6s0 35,250 005844 005845 -t} ${downspeedgraph wlp6s0 35,250 005844 005845 -t}
+
+
+${color white}/       ${fs_used_perc /}%  $color ${fs_used /} (${fs_size /})
+${fs_bar 5 }
+${color white}/virt   ${fs_used_perc /virt}%  $color ${fs_used /virt} (${fs_size /virt})
+${fs_bar 5 /virt}
+${color white}/backup ${fs_used_perc /backup}%  $color ${fs_used /backup} (${fs_size /backup})
+${fs_bar 5 /backup}
+${color white}/boot   ${fs_used_perc /boot}%  $color ${fs_used /boot} (${fs_size /boot})
+${fs_bar 5 /boot}
+
+/dev/nvme0  ${diskio_read /dev/nvme0n1} ${diskio_write /dev/nvme0n1}
+${diskiograph_read /dev/nvme0n1 35,250 005844 005845 -t} ${diskiograph_write /dev/nvme0n1 35,250 005844 005845 -t}
+/dev/nvme1  ${diskio_read /dev/nvme1n1} ${diskio_write /dev/nvme1n1}
+${diskiograph_read /dev/nvme1n1 35,250 005844 005845 -t} ${diskiograph_write /dev/nvme1n1 35,250 005844 005845 -t}
+
+
+${color white}Processes:$color $processes  ${color white}Running:$color $running_processes
 
 ${color white}Name               PID    CPU%   MEM%
 ${color DEDEDE} ${top name 1} ${top pid 1} ${top cpu 1} ${top mem 1}
@@ -86,9 +111,4 @@ ${color DEDEDE} ${top name 3} ${top pid 3} ${top cpu 3} ${top mem 3}
 ${color DEDEDE} ${top name 4} ${top pid 4} ${top cpu 4} ${top mem 4}
 ${color DEDEDE} ${top name 5} ${top pid 5} ${top cpu 5} ${top mem 5}
 
-${color white}Swap:$color $swap/$swapmax - $swapperc%
-${swapbar 5 }
-
-${color white}FS: $color${fs_used /}/${fs_size /}
-${fs_bar 5 }
 ]]
